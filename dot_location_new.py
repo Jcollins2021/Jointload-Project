@@ -62,21 +62,42 @@ def locate_dots(frame, crop):
 
 
 def find_average_min(data):
+    if len(data) == 0:
+        return 0
     total = 0
     for i in data:
-        total += np.argmin(i)
+        minimum = np.where(i == min(i))[0]
+        total += minimum[len(minimum) // 2]
     return total / len(data)
+    # total = 0
+    # total_count = 0
+    # for i in data:
+    #     sort = np.argsort(i)
+    #     total += sum(sort[: math.floor(len(sort) / 15)])
+    #     total_count += math.floor(len(sort) / 15)
+    # return total / total_count
 
 
-def main_function(video, cropped_location, write_file, foot_data):
+def find_average_max(data):
+    if len(data) == 0:
+        print("Here")
+        return 0
+    total = 0
+    # total_count = 0
+    for i in range(min(len(data) // 100, 100)):
+        total += np.argmax(data[i * 30 : min((i + 1) * 30, len(data))])
+        # sort = np.argsort(data[i * 30 : min((i + 1) * 30, len(data))])
+        # total += sum(sort[-1 * math.floor(len(sort) / 15) :])
+        # total_count += math.floor(len(sort) / 15)
+    # return total / total_count
+    return total / math.ceil(len(data) / 100)
+
+
+def main_function(video, cropped_location, write_file, foot_data, shift):
     less_than = 0
     more_than = 0
 
-    written_lines = 0
-    written = True
     angle_list = []
-
-    count = 0
 
     file = open(write_file, mode="w", newline="")
 
@@ -104,64 +125,57 @@ def main_function(video, cropped_location, write_file, foot_data):
         angle = np.degrees(
             np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
         )
-        angle_list.append(angle)
 
-        count += 1
-
-        # Write to file if 30 angles
-        if count >= 30:
-            # If new .mat file then need to readjust phase
-            if written_lines % 100 == 0 and written == True:
-                # Get the time stamp where we want the minimum to roughly be
-                if (
-                    len(
-                        foot_data[
-                            written_lines : min(written_lines + 100, len(foot_data))
-                        ]
-                    )
-                    == 0
-                ):
-                    break
-                time_stamp = find_average_min(
-                    foot_data[written_lines : min(written_lines + 100, len(foot_data))]
-                )
-                time_stamp = math.floor(time_stamp / 1000 * 30)
-
-                angle_min = np.argmax(angle_list)
-                shift = time_stamp - angle_min
-                if shift < 0:
-                    angle_list = angle_list[np.abs(shift) :]
-                    count = len(angle_list)
-                    written = False
-                elif shift > 0:
-                    angle_list = angle_list[30 - shift :]
-                    count = len(angle_list)
-                    written = False
-                else:
-                    for n, i in enumerate(angle_list):
-                        file.write(str(i))
-                        if n < 29:
-                            file.write(", ")
-                    file.write("\n")
-                    angle_list = []
-                    written = True
-                    count = 0
-                    written_lines += 1
-            else:
-                for n, i in enumerate(angle_list):
-                    file.write(str(i))
-                    if n < 29:
-                        file.write(", ")
-                file.write("\n")
-                angle_list = []
-                written = True
-                written_lines += 1
-                count = 0
+        file.write(str(angle))
+        file.write(",")
+        # angle_list.append(angle)
 
         if amount > 3:
             more_than += 1
         elif amount < 3:
             less_than += 1
+
+    # print(len(angle_list))
+    count = 0
+    written = 0
+
+    # for sh in shift:
+    #     if len(foot_data) <= written:
+    #         break
+    #     # foot_min_avg = find_average_min(
+    #     #     foot_data[written : min(written + 100, len(foot_data))]
+    #     # )
+    #     # angle_max_avg = find_average_max(
+    #     #     angle_list[count : min(count + 3000, len(angle_list))]
+    #     # )
+    #     # foot_min_avg = math.floor(foot_min_avg / 1000 * 30)
+
+    #     # shift = foot_min_avg - math.floor(angle_max_avg)
+    #     print("Hi")
+    #     # print(angle_max_avg)
+    #     print(sh)
+    #     # print(foot_min_avg)
+    #     print(count)
+
+    #     # if shift < 0:
+    #     #     count += abs(shift)
+    #     # elif shift > 0:
+    #     count += 30 - abs(sh)
+
+    #     for i in range(100):
+    #         # Basically just write them as long as there is one that corresponds and repeat
+    #         for j in range(30):
+    #             if count >= len(angle_list):
+    #                 break
+    #             if j != 0:
+    #                 file.write(" ")
+    #             file.write(str(angle_list[count]))
+    #             count += 1
+    #             if j < 29:
+    #                 file.write(",")
+    #         written += 1
+    #         file.write("\n")
+    #     # break
 
     file.close()
     print(more_than)
@@ -177,15 +191,49 @@ F1_cropped_location = [220, 480, 50, 280]
 F2_cropped_location = [180, 400, 100, 300]
 F3_cropped_location = [150, 380, 100, 300]
 
+F1_shift = [27, 9, 9, 9, 12, 6, 11, 9, 7, 9, 12, 9, 6, 12, 6, 9, 10, 8]
+F2_shift = [6, 8, 9, 6, 7, 14, 8, 6, 12, 5, 10, 13, 8, 9, 8, 9, 8, 9]
+F3_shift = [13, 8, 9, 7, 9, 9, 8, 8, 7, 9, 12, 10, 9, 8, 10, 8, 10, 12]
+
 
 # video = cv2.VideoCapture("./JointLoad Data/Midium_F1.mov")
 # video = cv2.VideoCapture("./JointLoad Data/Low_F2.mov")
 video = cv2.VideoCapture("./JointLoad Data/High_F3.mov")
+# video = cv2.VideoCapture("./JointLoad Data/trimmedLow_F2.mov")
 
 # foot_data, size = get_raw("Foot", "F1")
 # foot_data, size = get_raw("Foot", "F2")
 foot_data, size = get_raw("Foot", "F3")
 
-# main_function(video, F1_cropped_location, "./JointLoad Data/F1_Angle.csv", foot_data)
-# main_function(video, F2_cropped_location, "./JointLoad Data/F2_Angle.csv", foot_data)
-main_function(video, F3_cropped_location, "./JointLoad Data/F3_Angle.csv", foot_data)
+# main_function(
+#     video, F1_cropped_location, "./JointLoad Data/F1_Angle.csv", foot_data, F1_shift
+# )
+# main_function(
+#     video, F2_cropped_location, "./JointLoad Data/F2_Angle.csv", foot_data, F2_shift
+# )
+# main_function(
+#     video, F3_cropped_location, "./JointLoad Data/F3_Angle.csv", foot_data, F3_shift
+# )
+
+
+# main_function(
+#     video,
+#     F1_cropped_location,
+#     "./JointLoad Data/F1_Angle_Entire.csv",
+#     foot_data,
+#     F1_shift,
+# )
+# main_function(
+#     video,
+#     F2_cropped_location,
+#     "./JointLoad Data/F2_Angle_Entire.csv",
+#     foot_data,
+#     F2_shift,
+# )
+main_function(
+    video,
+    F3_cropped_location,
+    "./JointLoad Data/F3_Angle_Entire.csv",
+    foot_data,
+    F3_shift,
+)
