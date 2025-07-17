@@ -1,8 +1,7 @@
 import cv2
 import numpy as np
-from get_data import get_raw, get_magnitudes
+from main.get_data import get_raw, get_magnitudes
 import math
-
 
 # Video is at 30 fps
 
@@ -191,6 +190,7 @@ F1_cropped_location = [220, 480, 50, 280]
 F2_cropped_location = [180, 400, 100, 300]
 F3_cropped_location = [150, 380, 100, 300]
 
+# Number of frames to shift for each mat file to align them
 F1_shift = [27, 9, 9, 9, 12, 6, 11, 9, 7, 9, 12, 9, 6, 12, 6, 9, 10, 8]
 F2_shift = [6, 8, 9, 6, 7, 14, 8, 6, 12, 5, 10, 13, 8, 9, 8, 9, 8, 9]
 F3_shift = [13, 8, 9, 7, 9, 9, 8, 8, 7, 9, 12, 10, 9, 8, 10, 8, 10, 12]

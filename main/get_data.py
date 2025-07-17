@@ -2,6 +2,7 @@ import os
 import scipy.io
 import numpy as np
 
+# Read data and convert to what we need.
 
 def get_raw(kind: str, test: str):
 

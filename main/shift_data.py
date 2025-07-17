@@ -1,8 +1,10 @@
 import numpy as np
-from get_data import get_raw, get_magnitudes
+from main.get_data import get_raw, get_magnitudes
 import math
 import csv
 import matplotlib.pyplot as plt
+
+# Shift the data to align videos and .mat files
 
 plot_number = 17
 

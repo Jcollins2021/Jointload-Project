@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from get_data import get_raw, get_magnitudes
+from main.get_data import get_raw, get_magnitudes
 import math
 
 
